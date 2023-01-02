@@ -1,0 +1,9 @@
+venv
+.idea
+__pycache__/
+*.cfg
+*.pkl
+*.txt
+/Lib
+/Scripts
+/include
