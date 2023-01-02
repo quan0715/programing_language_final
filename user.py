@@ -11,11 +11,11 @@ class User:
     def __init__(self, name):
         self.name = name
         self.sheets = SheetDict()
-        print(f'user: "{self.name}" creat successfully')
 
     def create_new_sheet(self, sheet_name: str):
         if not self.sheets.is_exist(sheet_name):
             self.sheets.update(Sheet(sheet_name))
+            IOController.print_created_success_message("sheet", sheet_name)
             return self.sheets.get(sheet_name)
 
     def show_sheet(self, sheet_name: str):

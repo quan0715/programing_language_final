@@ -11,7 +11,6 @@ class Sheet:
         self.name = name
         self.sheet = [[0 for _ in range(Sheet.COLUMN_NUMBER)] for __ in range(Sheet.COLUMN_NUMBER)]
         self.access_right = AccessRight.editable
-        print(f'sheet: "{self.name}" creat successfully')
 
     def change_access_right(self, access_right: AccessRight):
         self.access_right = access_right
@@ -21,7 +20,7 @@ class Sheet:
         if self.access_right == AccessRight.read_only:
             print("This sheet is not accessible.")
             return None
-        EditMode.open(self)
+        EditMode().open(self)
 
     def __repr__(self):
         df = pd.DataFrame(self.sheet)
@@ -36,17 +35,14 @@ class EditMode:
     def get_id(self):
         return self._id
 
-    @classmethod
-    def open(cls, target_sheet: Sheet):
-        print("-----------------Edit Mode------------------")
+    def open(self, target_sheet: Sheet):
+        IOController.print_mode_head("Edit Mode")
         while True:
             user_input = IOController.get_sheet_edit_command()
             if not user_input:
-                print("---------------End Edit Mode---------------")
-                print(target_sheet)
+                IOController.print_mode_head("End Edit Mode")
                 break
             elif user_input == "invalid input":
-                print("invalid input")
                 continue
             else:
                 row_idx, col_idx, value = user_input

@@ -3,31 +3,29 @@ from misc import *
 
 
 class OPController:
+    op_list = {}
+
     def __init__(self):
-        self.op_list = {}
-        self.exit_key = None
+        self.id = id(self)
 
-    def show(self):
-        print("---------------Menu---------------")
-        for op_code, op in self.op_list.items():
+    @classmethod
+    def show(cls):
+        IOController.print_mode_head('MENU')
+        for op_code, op in cls.op_list.items():
             print(f"Key: {op_code} -> {op['text']}")
-        print("----------------------------------")
+        IOController.print_mode_bottom()
 
-    def match(self, op_code):
-        print(f"---------{self.op_list[op_code]['text']}---------")
-        self.op_list[op_code]['run']()
+    @classmethod
+    def match(cls, op_code):
+        IOController.print_mode_head(cls.op_list[op_code]['text'].upper())
+        cls.op_list[op_code]['run']()
+        IOController.print_mode_bottom()
 
-    def set_rule(self, dict: Dict):
-        self.op_list = dict
+    @classmethod
+    def set_rule(cls, d: Dict):
+        cls.op_list = d
 
-    def get_next_op(self):
-        self.show()
-        op = IOController.get_op_code()
-        self.match(str(op))
-        return True if str(op) != self.exit_key else False
 
-    def set_exit_key(self, key):
-        self.exit_key = key
 class UserDict(ObjectHashMap):
     def __init__(self):
         super().__init__(type_name="user", object_type=User)
@@ -36,9 +34,7 @@ class UserDict(ObjectHashMap):
 class CollaborativeSheets:
     def __init__(self):
         self.users = UserDict()
-        self.op_controller = OPController()
-        self.op_controller.set_exit_key('7')
-        self.op_controller.set_rule({
+        OPController.set_rule({
             '1': {'text': "Create a user", 'run': self._create_user},
             '2': {'text': "Create a sheet", 'run': self._create_sheet},
             '3': {'text': "Check a sheet", 'run': self._check_sheet},
@@ -48,16 +44,18 @@ class CollaborativeSheets:
             '7': {'text': "exit", 'run': self._exit},
         })
 
-
     def run(self):
-        end = True
-        while end:
-            end = self.op_controller.get_next_op()
+        op = 1
+        while op != 7:
+            OPController.show()
+            op = IOController.get_op_code()
+            OPController.match(str(op))
 
     def _create_user(self):
         username = IOController.get_username()
         if not self.users.is_exist(username):
             self.users.update(User(username))
+            IOController.print_created_success_message("user", username)
 
     def _get_user_by_input_name(self):
         user_name = IOController.get_username(prefix="target ")
@@ -66,7 +64,7 @@ class CollaborativeSheets:
     def _create_sheet(self):
         user = self._get_user_by_input_name()
         if user:
-            sheet_name = IOController.get_sheet_name(prefix="new sheet ")
+            sheet_name = IOController.get_sheet_name(prefix="new ")
             user.create_new_sheet(sheet_name)
         else:
             self.error()
@@ -74,7 +72,7 @@ class CollaborativeSheets:
     def _check_sheet(self):
         user = self._get_user_by_input_name()
         if user:
-            sheet_name = IOController.get_sheet_name(prefix="new sheet name/")
+            sheet_name = IOController.get_sheet_name(prefix="target ")
             user.show_sheet(sheet_name)
         else:
             self.error()
@@ -82,14 +80,14 @@ class CollaborativeSheets:
     def _update_value(self):
         user = self._get_user_by_input_name()
         if user:
-            sheet_name = input(f"target sheet {user.name}/")
+            sheet_name = IOController.get_sheet_name(prefix="target ")
             user.open_edit_mode(sheet_name)
 
     def _change_sheet_right(self):
         user = self._get_user_by_input_name()
         if user:
             sheet_name = IOController.get_sheet_name(prefix="target ")
-            user.update_sheet_access_right(sheet_name, AccessRight.read_only)
+            user.update_sheet_access_right(sheet_name)
         else:
             self.error()
 
@@ -103,13 +101,13 @@ class CollaborativeSheets:
             if collaborator:
                 host.collaborate_on_other_sheet(shared_sheet_name, collaborator)
         else:
-            print("commend failed")
+            self.error()
 
     def _exit(self):
         print("application end")
 
     def error(self):
-        print("Sorry, command failed, please try again")
+        print("Sorry, command failed or the operation is not allowed, please try again")
 
 
 def main():
