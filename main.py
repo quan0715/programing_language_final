@@ -5,6 +5,7 @@ from misc import *
 class OPController:
     def __init__(self):
         self.op_list = {}
+        self.exit_key = None
 
     def show(self):
         print("---------------Menu---------------")
@@ -23,8 +24,10 @@ class OPController:
         self.show()
         op = IOController.get_op_code()
         self.match(str(op))
+        return True if str(op) != self.exit_key else False
 
-
+    def set_exit_key(self, key):
+        self.exit_key = key
 class UserDict(ObjectHashMap):
     def __init__(self):
         super().__init__(type_name="user", object_type=User)
@@ -34,6 +37,7 @@ class CollaborativeSheets:
     def __init__(self):
         self.users = UserDict()
         self.op_controller = OPController()
+        self.op_controller.set_exit_key('7')
         self.op_controller.set_rule({
             '1': {'text': "Create a user", 'run': self._create_user},
             '2': {'text': "Create a sheet", 'run': self._create_sheet},
@@ -44,9 +48,11 @@ class CollaborativeSheets:
             '7': {'text': "exit", 'run': self._exit},
         })
 
+
     def run(self):
-        while True:
-            self.op_controller.get_next_op()
+        end = True
+        while end:
+            end = self.op_controller.get_next_op()
 
     def _create_user(self):
         username = IOController.get_username()
